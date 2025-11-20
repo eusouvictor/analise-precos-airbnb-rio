@@ -8,4 +8,24 @@ if not os.path.exists(file_path):
 
 df = pd.read_csv(file_path)
 
-print(df.head())
+# Remove símbolos de moeda e vírgulas, e converte para numérico
+df['price'] = df['price'].str.replace('$', '', regex=False).str.replace(',', '', regex=False)
+
+# Converte a coluna 'price' para numérico (float)
+df['price'] = pd.to_numeric(df['price'])
+
+# Remove valores nulos e negativos
+df = df.dropna(subset=['price'])
+df = df[df['price'] > 0]
+
+# Exibe informações sobre a coluna 'price'
+print("\n----- Preço limpo (Primeiras 5 linhas) -----")
+print(df['price'].head())
+
+# Verifica o tipo de dado da coluna 'price'
+print("\n----- Tipo de dado da coluna (Deve ser Float64) -----")
+print(df['price'].dtype)
+
+# Estatísticas descritivas da coluna 'price'
+print("\n----- Estatísticas descritivas do preço -----")
+print(df['price'].describe())
