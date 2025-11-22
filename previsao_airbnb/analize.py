@@ -89,3 +89,35 @@ print(f"O erro médio do nosso modelo é de: R$ {erro_medio:.2f}")
 print("\nExemplo de Previsões vs Realidade:")
 comparacao = pd.DataFrame({'Real': y_test, 'Previsto': previsoes}).head(10)
 print(comparacao)
+
+# --- 10. O DETECTOR DE PREÇOS ABUSIVOS (PARA O TEXTO) ---
+# 1. Vamos criar uma tabela temporária
+df_abuso = pd.DataFrame()
+df_abuso['Bairro'] = df_limpo.loc[y_test.index, 'neighbourhood_cleansed']
+df_abuso['Real'] = y_test.values
+df_abuso['Justo'] = previsoes
+df_abuso['Tipo'] = df_limpo.loc[y_test.index, 'room_type']
+df_abuso['Pessoas'] = df_limpo.loc[y_test.index, 'accommodates']
+
+# 2. Calculamos a Diferença (Real - Justo)
+# Se o Real é 1000 e o Justo é 300, a diferença é +700 (Abuso!)
+df_abuso['Diferenca'] = df_abuso['Real'] - df_abuso['Justo']
+
+# 3. Ordenamos para pegar o MAIOR abuso de todos (o campeão da exploração)
+top_abusivo = df_abuso.sort_values(by='Diferenca', ascending=False).iloc[0]
+
+# 4. Calculamos a porcentagem de aumento
+aumento_perc = ((top_abusivo['Real'] - top_abusivo['Justo']) / top_abusivo['Justo']) * 100
+
+# 5. IMPRIMIR O TEXTO PRONTO PARA COPIAR E COLAR
+print("\n" + "="*50)
+print("AQUI ESTÁ O SEU EXEMPLO REAL (COPIE OS DADOS ABAIXO):")
+print("="*50)
+print(f"Bairro: {top_abusivo['Bairro']}")
+print(f"Tipo: {top_abusivo['Tipo']}")
+print(f"Capacidade: {top_abusivo['Pessoas']} pessoas")
+print(f"Preço Real (Cobrado): R$ {top_abusivo['Real']:.2f}")
+print(f"Preço Justo (IA): R$ {top_abusivo['Justo']:.2f}")
+print(f"Diferença Absurda: R$ {top_abusivo['Diferenca']:.2f}")
+print(f"Porcentagem de Abuso: +{aumento_perc:.0f}%")
+print("="*50 + "\n")
