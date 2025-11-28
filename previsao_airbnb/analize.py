@@ -74,18 +74,54 @@ modelo = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
 modelo.fit(X_train, y_train)
 print("Treinamento concluído!")
 
-# --- 7. AVALIAÇÃO (A PROVA) ---
-# O modelo tenta adivinhar os preços dos 20% que ele nunca viu
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import numpy as np
+
+# ... (seu código de treino continua igual) ...
+
+# --- 7. AVALIAÇÃO PROFISSIONAL ---
 previsoes = modelo.predict(X_test)
 
-# Calculamos o Erro Médio Absoluto (MAE)
-# Ex: Se o real é 300 e ele chutou 350, o erro é 50.
-erro_medio = mean_absolute_error(y_test, previsoes)
+# ... (seu código de treino continua igual lá pra cima) ...
 
-print("\n----- RESULTADO FINAL -----")
-print(f"O erro médio do nosso modelo é de: R$ {erro_medio:.2f}")
+# --- 7. AVALIAÇÃO TÉCNICA DO MODELO ---
+previsoes = modelo.predict(X_test)
 
-# Comparação visual rápida
-print("\nExemplo de Previsões vs Realidade:")
-comparacao = pd.DataFrame({'Real': y_test, 'Previsto': previsoes}).head(10)
-print(comparacao)
+# Métricas Padrão
+mae = mean_absolute_error(y_test, previsoes)
+rmse = np.sqrt(mean_squared_error(y_test, previsoes))
+r2 = r2_score(y_test, previsoes)
+
+# --- CÁLCULO DA "ACURÁCIA" (Margem de Aceitação) ---
+# Vamos considerar "acerto" se o modelo errar por menos de 20% do valor real
+margem_aceitavel = 0.20 
+erros_percentuais = np.abs((y_test - previsoes) / y_test)
+acertos = np.sum(erros_percentuais <= margem_aceitavel)
+acuracia_custom = (acertos / len(y_test)) * 100
+
+print("\n" + "#" * 60)
+print("RELATORIO DE DESEMPENHO - MODELO RANDOM FOREST")
+print("#" * 60)
+print(f"Erro Medio Absoluto (MAE):         R$ {mae:.2f}")
+print(f"Raiz do Erro Quadratico (RMSE):    R$ {rmse:.2f}")
+print(f"Coeficiente de Determinacao (R2):  {r2:.2%}")
+print("-" * 60)
+print(f"ACURACIA (Margem de erro <= 20%):  {acuracia_custom:.2f}%")
+print("-" * 60)
+print("Interpretacao:")
+print(f" - O modelo explica {r2:.1%} da variancia dos dados.")
+print(f" - Em {acuracia_custom:.1f}% dos casos, a previsao ficou muito proxima do valor real.")
+print("#" * 60)
+
+# --- 8. AMOSTRA DE RESULTADOS ---
+df_resultado = pd.DataFrame()
+df_resultado['Real'] = y_test.values
+df_resultado['Previsto'] = previsoes
+df_resultado['Dif (R$)'] = df_resultado['Real'] - df_resultado['Previsto']
+df_resultado['Erro (%)'] = np.abs((df_resultado['Dif (R$)'] / df_resultado['Real']) * 100)
+
+print("\nAMOSTRA DE 10 PREVISOES ALEATORIAS:")
+print("-" * 60)
+# Formatação limpa para a tabela não ficar torta
+print(df_resultado.sample(10).round(2).to_string(index=False)) 
+print("-" * 60 + "\n")
